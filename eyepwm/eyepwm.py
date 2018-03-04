@@ -26,11 +26,11 @@ class eyepwm:
         self.eye                  = PCA9685(0x40) # Always use the default i2c address for the PWM hats
         self.vert_ch            = vertical_channel
         self.horiz_ch           = horizontal_channel
-        self.pwm_freq = 50 
-        self.eye.set_pwm_freq(50)
+        self.pwm_freq = 50.0 
+        self.eye.set_pwm_freq(int(self.pwm_freq))
 
-        self.pwm_bitres = 4096
-        self.pwm_scaler = self.pwm_bitres * (1/self.pwm_freq)
+        self.pwm_bitres = 4096.0
+        self.pwm_scaler = self.pwm_bitres / (1/self.pwm_freq)
         # The PWM periods for a typical servomotor is between 1ms and 2ms, with 1.5ms being the middle of the useable range.        
         self.pwm_period_min   = 10e-4 * self.pwm_scaler # This is the minimum angle (1ms)
         self.pwm_period_zero  = 15e-4 * self.pwm_scaler # This angle is the middle of the servo range (1.5ms)
@@ -57,13 +57,13 @@ class eyepwm:
 
         # First calculate the new angle
         self.eye_vert_angle += step_size
-        self.eye_vert_angle = minmax(self.eye_vert_angle, eye)
+        self.eye_vert_angle = self.minmax(self.eye_vert_angle, eye)
 
         # Now map the new angle against a correction matrix, which accounts for the mechanism of the eye.
-        servo_angle = map_eye_to_servo(self.eye_horiz_angle);
+        servo_angle = self.map_eye_to_servo(self.eye_horiz_angle);
 
         # Convert the corrected angle into a PWM tick count and therefore duty cycle
-        servo_pwm_period = conv_servo_angle_ms(int(servo_angle))
+        servo_pwm_period = self.conv_servo_angle_ms(int(servo_angle))
 
         # Apply this new duty cycle to the servomotor
         self.eye.set_pwm(self.vert_ch, 0, servo_pwm_period)
@@ -71,9 +71,9 @@ class eyepwm:
         
     def step_horiz_angle(self, step_size):
         self.eye_horiz_angle += step_size
-        self.eye_horiz_angle = minmax(self.eye_horiz_angle, eye)
-        servo_angle = map_eye_to_servo(self.eye_horiz_angle);
-        servo_pwm_period = conv_servo_angle_ms(int(servo_angle))
+        self.eye_horiz_angle = self.minmax(self.eye_horiz_angle, eye)
+        servo_angle = self.map_eye_to_servo(self.eye_horiz_angle);
+        servo_pwm_period = self.conv_servo_angle_ms(int(servo_angle))
         self.eye.set_pwm(self.horiz_ch, 0, servo_pwm_period)
 
         
@@ -119,10 +119,10 @@ class eyepwm:
 
     def vert_test(self):
         while True:
-            self.eye_vert.set_pwm(self.vert_ch, 0, int(self.pwm_period_min))
-            time.sleep(1)
-            self.eye_vert.set_pwm(self.vert_ch, 0, int( self.pwm_period_zero))
-            time.sleep(1)
-            self.eye_vert.set_pwm(self.vert_ch, 0, int(self.pwm_period_max))
-            time.sleep(2)
+            self.eye.set_pwm(self.vert_ch, 0, int(self.pwm_period_min))
+            time.sleep(0.3)
+            self.eye.set_pwm(self.vert_ch, 0, int( self.pwm_period_zero))
+            time.sleep(0.3)
+            self.eye.set_pwm(self.vert_ch, 0, int(self.pwm_period_max))
+            time.sleep(0.3)
 
