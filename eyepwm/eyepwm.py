@@ -57,7 +57,7 @@ class eyepwm:
 
         # First calculate the new angle
         self.eye_vert_angle += step_size
-        self.eye_vert_angle = self.minmax(self.eye_vert_angle, eye)
+        self.eye_vert_angle = self.minmax(self.eye_vert_angle, "eye_angle")
 
         # Now map the new angle against a correction matrix, which accounts for the mechanism of the eye.
         servo_angle = self.map_eye_to_servo(self.eye_horiz_angle);
@@ -66,15 +66,15 @@ class eyepwm:
         servo_pwm_period = self.conv_servo_angle_ms(int(servo_angle))
 
         # Apply this new duty cycle to the servomotor
-        self.eye.set_pwm(self.vert_ch, 0, servo_pwm_period)
+        self.eye.set_pwm(self.vert_ch, 0, int(servo_pwm_period))
 
         
     def step_horiz_angle(self, step_size):
         self.eye_horiz_angle += step_size
-        self.eye_horiz_angle = self.minmax(self.eye_horiz_angle, eye)
+        self.eye_horiz_angle = self.minmax(self.eye_horiz_angle, "eye_angle")
         servo_angle = self.map_eye_to_servo(self.eye_horiz_angle);
         servo_pwm_period = self.conv_servo_angle_ms(int(servo_angle))
-        self.eye.set_pwm(self.horiz_ch, 0, servo_pwm_period)
+        self.eye.set_pwm(self.horiz_ch, 0, int(servo_pwm_period))
 
         
     def get_vert_angle(self):
@@ -98,23 +98,25 @@ class eyepwm:
         This mapping may be different in vertical and horizontal angles. """
     
         # TODO
-        return angle;
+        return angle
 
-    def minmax(new_input, eye_or_servo):
+    def minmax(self, new_input, eye_or_servo):
         """ This function takes a new eye or servo position, and checks if it has exceeded either of the minimum or maximum values. 
         If the new value is outside the allowed range, limit it to the extreme value. 
         """
 
-        if eye_or_servo == eye :
+        if eye_or_servo == "eye_angle" :
             if new_input > self.eye_angle_max:
                 new_input = self.eye_angle_max
             elif new_input < self.eye_angle_min:
                 new_input = self.eye_angle_min
-        elif eye_or_servo == servo :
+        elif eye_or_servo == "servo_angle" :
             if new_input > self.servo_angle_max:
                 new_input = self.servo_angle_max
             elif new_input < self.servo_angle_min:
                 new_input = self.servo_angle_min
+
+        return new_input
 
 
     def vert_test(self):
