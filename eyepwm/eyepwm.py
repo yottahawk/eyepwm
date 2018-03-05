@@ -39,8 +39,8 @@ class eyepwm:
         self.servo_angle_max  =  80
         self.servo_angle_min  = -80
         self.servo_angle_range = self.servo_angle_max - self.servo_angle_min
-        self.eye_angle_max    =  30
-        self.eye_angle_min    = -30
+        self.eye_angle_max    =  80
+        self.eye_angle_min    = -80
 
         # Servo Position Tracking Variables (degrees)
         self.eye_vert_angle   = 0
@@ -55,12 +55,14 @@ class eyepwm:
     def step_vert_angle(self, step_size):
         """Advances the eye position by the "step_size" argument"""
 
+        #import pdb; pdb.set_trace()
+
         # First calculate the new angle
         self.eye_vert_angle += step_size
         self.eye_vert_angle = self.minmax(self.eye_vert_angle, "eye_angle")
 
         # Now map the new angle against a correction matrix, which accounts for the mechanism of the eye.
-        servo_angle = self.map_eye_to_servo(self.eye_horiz_angle);
+        servo_angle = self.map_eye_to_servo(self.eye_vert_angle);
 
         # Convert the corrected angle into a PWM tick count and therefore duty cycle
         servo_pwm_period = self.conv_servo_angle_ms(int(servo_angle))
@@ -88,8 +90,8 @@ class eyepwm:
         A typical servo positioning system moves between -90 and 90 degress with periods between 1 and 2 ms.
         However, this library automatically takes the input angle and scales it to a position between the max servo range variables """
 
-        scaled_angle = angle / self.servo_angle_range
-        return self.pwm_period_min + (scaled_angle * self.pwm_period_range)
+        scaled_angle = (float(angle) - float(self.servo_angle_min)) / float(self.servo_angle_range)
+        return float(self.pwm_period_min + (scaled_angle * self.pwm_period_range))
 
     
     def map_eye_to_servo(self, angle):
